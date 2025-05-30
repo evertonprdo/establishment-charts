@@ -1,10 +1,9 @@
-use postgres_types::{FromSql, IsNull, ToSql, Type};
 use rocket::serde;
 use serde::Serialize;
+use tokio_postgres::types::{FromSql, IsNull, ToSql, Type};
 
-#[derive(Debug, Serialize, ToSql, FromSql)]
+#[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
-#[postgres(name = "establishment")]
 pub struct Establishment {
     pub id: i64,
     pub name: String,
@@ -15,9 +14,8 @@ pub struct Establishment {
     pub schedules_amount: i32,
 }
 
-#[derive(Debug, Serialize, ToSql, FromSql)]
+#[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
-#[postgres(name = "address")]
 pub struct Address {
     pub establish_id: i64,
     pub city: String,
@@ -37,12 +35,12 @@ pub struct Point {
     pub longitude: f64,
 }
 impl<'a> FromSql<'a> for Point {
-    fn accepts(ty: &postgres_types::Type) -> bool {
+    fn accepts(ty: &Type) -> bool {
         *ty == Type::POINT
     }
 
     fn from_sql(
-        ty: &postgres_types::Type,
+        ty: &Type,
         raw: &'a [u8],
     ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
         if !<Point as FromSql>::accepts(ty) {
@@ -63,7 +61,7 @@ impl<'a> FromSql<'a> for Point {
     }
 }
 impl ToSql for Point {
-    fn accepts(ty: &postgres_types::Type) -> bool
+    fn accepts(ty: &Type) -> bool
     where
         Self: Sized,
     {
@@ -72,9 +70,9 @@ impl ToSql for Point {
 
     fn to_sql(
         &self,
-        ty: &postgres_types::Type,
+        ty: &Type,
         out: &mut tokio_postgres::types::private::BytesMut,
-    ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
+    ) -> Result<IsNull, Box<dyn std::error::Error + Sync + Send>>
     where
         Self: Sized,
     {
@@ -92,9 +90,9 @@ impl ToSql for Point {
 
     fn to_sql_checked(
         &self,
-        ty: &postgres_types::Type,
+        ty: &Type,
         out: &mut tokio_postgres::types::private::BytesMut,
-    ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>> {
+    ) -> Result<IsNull, Box<dyn std::error::Error + Sync + Send>> {
         if !<Point as ToSql>::accepts(ty) {
             return Err(format!("invalid type for Point: {:?}", ty).into());
         }
