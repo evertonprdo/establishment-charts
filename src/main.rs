@@ -14,6 +14,7 @@ use rocket::{
     launch, routes,
     serde::json::Json,
 };
+use rocket_cors::CorsOptions;
 
 #[launch]
 async fn rocket() -> _ {
@@ -31,6 +32,7 @@ async fn rocket() -> _ {
         .expect("Something goes wrong!");
 
     rocket::build()
+        .attach(CorsOptions::default().to_cors().unwrap())
         .manage(database)
         .mount("/", FileServer::from(dotenv!("STATIC_FILES_PATH")))
         .mount("/establishments", routes![amount_by])
@@ -43,7 +45,10 @@ async fn distinct_states(
 ) -> Result<Json<Vec<DistinctStates>>, http::Status> {
     match DistinctStates::execute(database).await {
         Ok(states) => Ok(Json(states)),
-        Err(_) => Err(Status::InternalServerError),
+        Err(err) => {
+            eprintln!("[ERROR]: {err}");
+            Err(Status::InternalServerError)
+        }
     }
 }
 
