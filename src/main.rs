@@ -32,7 +32,7 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(database)
-        .mount("/", FileServer::from("frontend/dist"))
+        .mount("/", FileServer::from(dotenv!("STATIC_FILES_PATH")))
         .mount("/establishments", routes![amount_by])
         .mount("/addresses", routes![distinct_states])
 }
