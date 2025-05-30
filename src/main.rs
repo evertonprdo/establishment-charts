@@ -1,0 +1,63 @@
+use dotenv::dotenv;
+use dotenv_codegen::dotenv;
+
+use establishment_charts::{
+    queries::{distinct_states::DistinctStates, establishments_amount_by::EstablishmentsAmountBy},
+    repository::{ConnectionParams, Database},
+};
+
+use rocket::{
+    State,
+    fs::FileServer,
+    get,
+    http::{self, Status},
+    launch, routes,
+    serde::json::Json,
+};
+
+#[launch]
+async fn rocket() -> _ {
+    dotenv().ok();
+
+    let connection_params = ConnectionParams {
+        host: dotenv!("HOST"),
+        user: dotenv!("USER"),
+        password: dotenv!("PASSWORD"),
+        dbname: dotenv!("DBNAME"),
+    };
+
+    let database = Database::new(connection_params)
+        .await
+        .expect("Something goes wrong!");
+
+    rocket::build()
+        .manage(database)
+        .mount("/", FileServer::from("frontend/dist"))
+        .mount("/establishments", routes![amount_by])
+        .mount("/addresses", routes![distinct_states])
+}
+
+#[get("/distinct-states")]
+async fn distinct_states(
+    database: &State<Database>,
+) -> Result<Json<Vec<DistinctStates>>, http::Status> {
+    match DistinctStates::execute(database).await {
+        Ok(states) => Ok(Json(states)),
+        Err(_) => Err(Status::InternalServerError),
+    }
+}
+
+#[get("/amount-by?<field>&<min_schedules>")]
+async fn amount_by(
+    db: &State<Database>,
+    field: &str,
+    min_schedules: Option<i32>,
+) -> Result<Json<EstablishmentsAmountBy>, http::Status> {
+    match EstablishmentsAmountBy::execute(db, field, min_schedules.unwrap_or(0)).await {
+        Ok(result) => Ok(Json(result)),
+        Err(err) => {
+            eprintln!("[ERROR]: {err}");
+            Err(Status::InternalServerError)
+        }
+    }
+}
