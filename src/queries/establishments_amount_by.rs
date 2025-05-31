@@ -17,6 +17,7 @@ pub struct EstablishmentsAmountByParams<'r> {
 pub struct LocationAmount {
     name: String,
     amount: i64,
+    schedules_amount: i64,
 }
 
 #[derive(Debug, Serialize)]
@@ -64,6 +65,7 @@ impl EstablishmentsAmountBy {
             let location = LocationAmount {
                 name: row.get("name"),
                 amount: row.get("amount"),
+                schedules_amount: row.get("schedules_amount"),
             };
 
             total += location.amount;

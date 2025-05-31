@@ -17,7 +17,7 @@ export type EstablishmentsAmountByParams = {
 };
 
 export type EstablishmentsAmountBy = {
-    locations: Array<{ name: string; amount: number }>;
+    locations: Array<{ name: string; amount: number; schedules_amount: number }>;
     total: number;
 };
 
