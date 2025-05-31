@@ -1,9 +1,16 @@
 use std::error::Error;
 
-use rocket::serde;
+use rocket::{FromForm, serde};
 use serde::Serialize;
 
 use crate::repository::Database;
+
+#[derive(FromForm)]
+pub struct EstablishmentsAmountByParams<'r> {
+    column: &'r str,
+    min_schedules: Option<u32>,
+    limit: Option<u32>,
+}
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -21,21 +28,31 @@ pub struct EstablishmentsAmountBy {
 impl EstablishmentsAmountBy {
     const QUERY: &str = include_str!("establishments_amount_by.sql");
 
-    fn validate_field<'a>(field: &'a str) -> Option<&'a str> {
-        match field {
-            "state" | "city" => Some(field),
+    fn validate_column<'a>(column: &'a str) -> Option<&'a str> {
+        match column {
+            "state" | "city" => Some(column),
             _ => None,
         }
     }
 
     pub async fn execute(
         db: &Database,
-        field: &str,
-        min_schedules: i32,
+        params: EstablishmentsAmountByParams<'_>,
     ) -> Result<Self, Box<dyn Error + Send + Sync>> {
-        let validated_field = Self::validate_field(field).ok_or("Invalid field name")?;
+        let validated_field = Self::validate_column(params.column).ok_or("Invalid column name")?;
+        let min_schedules = params
+            .min_schedules
+            .map(|n| i32::try_from(n).unwrap_or(i32::MAX))
+            .unwrap_or(0);
 
-        let query = Self::QUERY.replace("{ field }", validated_field);
+        let limit_clause = match params.limit {
+            Some(limit) => format!("LIMIT {limit}"),
+            None => "".to_string(),
+        };
+        let query = Self::QUERY
+            .replace("{ column }", validated_field)
+            .replace("{ limit_clause }", &limit_clause);
+
         let rows = db.client().query(&query, &[&min_schedules]).await?;
 
         let mut locations = Vec::with_capacity(rows.len());

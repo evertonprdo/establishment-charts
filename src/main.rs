@@ -2,7 +2,10 @@ use dotenv::dotenv;
 use dotenv_codegen::dotenv;
 
 use establishment_charts::{
-    queries::{distinct_states::DistinctStates, establishments_amount_by::EstablishmentsAmountBy},
+    queries::{
+        distinct_states::DistinctStates,
+        establishments_amount_by::{EstablishmentsAmountBy, EstablishmentsAmountByParams},
+    },
     repository::{ConnectionParams, Database},
 };
 
@@ -52,13 +55,12 @@ async fn distinct_states(
     }
 }
 
-#[get("/amount-by?<field>&<min_schedules>")]
+#[get("/amount-by?<request..>")]
 async fn amount_by(
     db: &State<Database>,
-    field: &str,
-    min_schedules: Option<i32>,
+    request: EstablishmentsAmountByParams<'_>,
 ) -> Result<Json<EstablishmentsAmountBy>, http::Status> {
-    match EstablishmentsAmountBy::execute(db, field, min_schedules.unwrap_or(0)).await {
+    match EstablishmentsAmountBy::execute(db, request).await {
         Ok(result) => Ok(Json(result)),
         Err(err) => {
             eprintln!("[ERROR]: {err}");
