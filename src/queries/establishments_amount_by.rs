@@ -30,7 +30,9 @@ impl EstablishmentsAmountBy {
 
     fn validate_column<'a>(column: &'a str) -> Option<&'a str> {
         match column {
-            "state" | "city" => Some(column),
+            "state" | "city" | "macro_region" | "immediate_region" | "intermediate_region" => {
+                Some(column)
+            }
             _ => None,
         }
     }

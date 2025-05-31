@@ -1,3 +1,7 @@
+import { Menu } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     Sheet,
     SheetClose,
@@ -7,12 +11,10 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+
 import { Pages, type Paths } from ".";
 import { useNavigation } from "./context";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 export function NavigationMenu() {
     const { navigate, current } = useNavigation();

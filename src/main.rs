@@ -5,6 +5,7 @@ use establishment_charts::{
     queries::{
         distinct_states::DistinctStates,
         establishments_amount_by::{EstablishmentsAmountBy, EstablishmentsAmountByParams},
+        establishments_summary::EstablishmentsSummary,
     },
     repository::{ConnectionParams, Database},
 };
@@ -38,7 +39,10 @@ async fn rocket() -> _ {
         .attach(CorsOptions::default().to_cors().unwrap())
         .manage(database)
         .mount("/", FileServer::from(dotenv!("STATIC_FILES_PATH")))
-        .mount("/establishments", routes![amount_by])
+        .mount(
+            "/establishments",
+            routes![amount_by, establishments_summary],
+        )
         .mount("/addresses", routes![distinct_states])
 }
 
@@ -61,6 +65,19 @@ async fn amount_by(
     request: EstablishmentsAmountByParams<'_>,
 ) -> Result<Json<EstablishmentsAmountBy>, http::Status> {
     match EstablishmentsAmountBy::execute(db, request).await {
+        Ok(result) => Ok(Json(result)),
+        Err(err) => {
+            eprintln!("[ERROR]: {err}");
+            Err(Status::InternalServerError)
+        }
+    }
+}
+
+#[get("/summary")]
+async fn establishments_summary(
+    db: &State<Database>,
+) -> Result<Json<EstablishmentsSummary>, http::Status> {
+    match EstablishmentsSummary::execute(db).await {
         Ok(result) => Ok(Json(result)),
         Err(err) => {
             eprintln!("[ERROR]: {err}");

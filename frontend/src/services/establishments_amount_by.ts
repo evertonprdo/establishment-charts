@@ -1,7 +1,17 @@
-import { BASE_URL } from "./api";
+import { api } from "./api";
+
+export const LocationColumns = {
+    state: "State",
+    city: "City",
+    macro_region: "Macro Region",
+    immediate_region: "Immediate Region",
+    intermediate_region: "Intermediate Region",
+} as const;
+
+export type LocationColumnsKeys = keyof typeof LocationColumns;
 
 export type EstablishmentsAmountByParams = {
-    column: "state" | "city";
+    column: LocationColumnsKeys;
     min_schedules?: number;
     limit?: number;
 };
@@ -11,21 +21,12 @@ export type EstablishmentsAmountBy = {
     total: number;
 };
 
-export async function getEstablishmentsAmountBy({
-    column,
-    min_schedules = 0,
-    limit,
-}: EstablishmentsAmountByParams): Promise<EstablishmentsAmountBy> {
-    try {
-        let response = await fetch(
-            `${BASE_URL}/establishments/amount-by?column=${column}&min_schedules=${min_schedules}${
-                limit ? `&limit=${limit}` : ""
-            }`
-        );
+export async function getEstablishmentsAmountBy(
+    params: EstablishmentsAmountByParams
+): Promise<EstablishmentsAmountBy> {
+    const response = await api.get<EstablishmentsAmountBy>("/establishments/amount-by", {
+        params,
+    });
 
-        let data: EstablishmentsAmountBy = await response.json();
-        return data;
-    } catch (error) {
-        throw error;
-    }
+    return response.data;
 }
