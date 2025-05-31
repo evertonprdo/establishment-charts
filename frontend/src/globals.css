@@ -1,0 +1,54 @@
+body {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+}
+
+* {
+    /* Standard CSS scrollbar properties (primarily for Firefox) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+
+    /* WebKit scrollbar styling (for Chrome, Safari, Edge) */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+}
+
+/* `cursor: pointer` is not cool anymore nowadays */
+button:not([disabled]),
+[role="button"]:not([disabled]),
+a:not([disabled]) {
+    cursor: pointer;
+}
+
+/* Keeps the scrollbar when a dialog is open */
+body[data-scroll-locked] {
+    overflow: auto !important;
+    margin-right: 0 !important;
+}
+
+.container-wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 1400px;
+}
+
+@media (min-width: 1800px) {
+    .container-wrapper {
+        max-width: 1536px;
+    }
+}
+
+@media (min-width: 2560px) {
+    .container-wrapper {
+        max-width: 2048px;
+    }
+}
